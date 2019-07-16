@@ -5,9 +5,9 @@ from datetime import datetime
 keep_going = True
 
 
-async def expensive_op(n: int = 0):
+async def expensive_op():
     print(f"starting op at {datetime.utcnow()}")
-    await asyncio.sleep(n)
+    await asyncio.sleep(3)
     print(f"ending op at {datetime.utcnow()}")
 
 
@@ -22,7 +22,7 @@ async def main():
     loop.add_signal_handler(signal.SIGINT, lambda: signal_handler(loop))
     while keep_going:
         print("about to do expensive op")
-        await expensive_op(3)
+        await expensive_op()
     print("exiting...")
 
 

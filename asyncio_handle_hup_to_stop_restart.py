@@ -28,18 +28,13 @@ class MyAIterator:
         self.keep_going = False
 
 
-class HUPHandler:
+class SignalHandlingRunner:
     def __init__(self):
         self.keep_going = True
         self.aiter = MyAIterator()
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGINT, lambda: self.sigint_handler(loop))
         loop.add_signal_handler(signal.SIGHUP, lambda: self.sighup_handler(loop))
-
-    async def expensive_op(self):
-        print(f"starting op at {datetime.utcnow()}")
-        await asyncio.sleep(3),
-        print(f"ending op at {datetime.utcnow()}")
 
     async def run(self):
         async for val in self.aiter:
@@ -53,13 +48,6 @@ class HUPHandler:
     def sigint_handler(self, loop: AbstractEventLoop):
         print("got sigint")
         self.aiter.stop()
-
-        # raising an exception doesn't work as it only bubbles up into the
-        # asyncio library code. I can't catch it in `main()` or in __main__.
-        # raise Exception("foobar")
-
-        # can't just call stop because that's too aggressive
-        # loop.stop()
 
         def stop_if_only_one():
             tasks = asyncio.all_tasks(loop)
@@ -81,9 +69,9 @@ class HUPHandler:
 
 
 async def main():
-    handler = HUPHandler()
+    runner = SignalHandlingRunner()
     loop = asyncio.get_running_loop()
-    loop.create_task(handler.run())
+    loop.create_task(runner.run())
     print("exiting main")
 
 
